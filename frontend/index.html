@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <body>
+    <h1>Three-Tier Demo</h1>
+    <button id="btn">Create Order</button>
+    <pre id="out"></pre>
+    <script>
+      document.getElementById('btn').onclick = async () => {
+        const res = await fetch('/orders', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({item:'pizza', qty:1})
+        });
+        document.getElementById('out').textContent = await res.text();
+      };
+    </script>
+  </body>
+</html>
