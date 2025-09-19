@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: three-tier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      volumes:
+        - name: web
+          emptyDir: {}
+        - name: cfg
+          configMap:
+            name: frontend-config
+            items:
+              - key: index.html
+                path: index.html
+        - name: nginx
+          configMap:
+            name: frontend-config
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+      initContainers:
+        - name: copy-html
+          image: busybox
+          command: ["sh","-c","cp /cfg/index.html /usr/share/nginx/html/index.html"]
+          volumeMounts:
+            - name: web
+              mountPath: /usr/share/nginx/html
+            - name: cfg
+              mountPath: /cfg
+      containers:
+        - name: nginx
+          image: nginx:1.25
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: web
+              mountPath: /usr/share/nginx/html
+            - name: nginx
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
