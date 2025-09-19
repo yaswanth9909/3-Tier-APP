@@ -5,32 +5,40 @@ metadata:
   namespace: three-tier
 data:
   index.html: |
-    <!doctype html><html><body>
-      <h1>Three-Tier Demo (Kubernetes)</h1>
-      <button id="btn">Create Order</button>
-      <pre id="out"></pre>
-      <script>
-        document.getElementById('btn').onclick = async () => {
-          const res = await fetch('/orders', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({item:'k8s-pizza', qty:1})
-          });
-          document.getElementById('out').textContent = await res.text();
-        };
-      </script>
-    </body></html>
-  nginx.conf: |
-    events {}
-    http {
-      server {
-        listen 80;
-        location / {
-          root /usr/share/nginx/html;
-          index index.html;
-        }
-        location /orders    { proxy_pass http://api.three-tier.svc.cluster.local:8000/orders; }
-        location /health    { proxy_pass http://api.three-tier.svc.cluster.local:8000/health; }
-        location /health/db { proxy_pass http://api.three-tier.svc.cluster.local:8000/health/db; }
+    <!doctype html>
+    <html>
+      <body>
+        <h1>Three-Tier Demo (Kubernetes)</h1>
+        <button id="btn">Create Order</button>
+        <pre id="out"></pre>
+        <script>
+          document.getElementById('btn').onclick = async () => {
+            const res = await fetch('/orders', {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({item:'k8s-pizza', qty:1})
+            });
+            document.getElementById('out').textContent = await res.text();
+          };
+        </script>
+      </body>
+    </html>
+  default.conf: |
+    server {
+      listen 80;
+
+      location / {
+        root /usr/share/nginx/html;
+        index index.html;
       }
+
+      location /orders    { proxy_pass http://api.three-tier.svc.cluster.local:8000/orders; }
+      location /health    { proxy_pass http://api.three-tier.svc.cluster.local:8000/health; }
+      location /health/db { proxy_pass http://api.three-tier.svc.cluster.local:8000/health/db; }
+
+      # optional but handy
+      proxy_set_header Host              $host;
+      proxy_set_header X-Real-IP         $remote_addr;
+      proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
     }
