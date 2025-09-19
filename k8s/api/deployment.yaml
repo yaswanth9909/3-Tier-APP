@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: three-tier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: hello-docker:v2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_DSN
+              value: postgresql://postgres:postgres@db.three-tier.svc.cluster.local:5432/postgres
+          ports:
+            - containerPort: 8000
