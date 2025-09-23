@@ -1,0 +1,33 @@
+api:
+  image: hello-docker:v2
+  replicas: 1
+  port: 8000
+
+db:
+  image: postgres:16
+  replicas: 1
+  port: 5432
+  user: postgres
+  password: postgres
+  database: postgres
+  storage: ephemeral   # "ephemeral" -> emptyDir; later you can switch to PVC
+
+frontend:
+  image: nginx:1.25
+  replicas: 1
+  port: 80
+  indexHtml: |
+    <!doctype html><html><body>
+      <h1>Three-Tier Demo (Helm)</h1>
+      <button id="btn">Create Order</button>
+      <pre id="out"></pre>
+      <script>
+        document.getElementById('btn').onclick = async () => {
+          const res = await fetch('/orders', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({item:'helm-pizza', qty:1})
+          });
+          document.getElementById('out').textContent = await res.text();
+        };
+      </script>
+    </body></html>

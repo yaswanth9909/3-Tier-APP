@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: {{ .Values.api.image }}
+          ports:
+            - containerPort: {{ .Values.api.port }}
+          env:
+            - name: POSTGRES_DSN
+              value: "postgresql://{{ .Values.db.user }}:{{ .Values.db.password }}@db.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.db.port }}/{{ .Values.db.database }}"

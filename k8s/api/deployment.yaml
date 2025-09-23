@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: hello-docker:v2
+          image: hello-docker:v4
           imagePullPolicy: IfNotPresent
           env:
             - name: POSTGRES_DSN

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: {{ .Release.Namespace }}
+data:
+  index.html: |
+{{ .Values.frontend.indexHtml | nindent 4 }}
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 80;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+        }
+        location /orders    { proxy_pass http://api.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.api.port }}/orders; }
+        location /health    { proxy_pass http://api.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.api.port }}/health; }
+        location /health/db { proxy_pass http://api.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.api.port }}/health/db; }
+      }
+    }
