@@ -1,0 +1,6 @@
+loki:
+  auth_enabled: false
+grafana:
+  enabled: false   # we already have Grafana from kube-prometheus-stack
+promtail:
+  enabled: true    # ship pod logs to Loki
