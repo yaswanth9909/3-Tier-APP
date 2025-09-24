@@ -16,8 +16,18 @@ spec:
       containers:
         - name: api
           image: {{ .Values.api.image }}
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: {{ .Values.api.port }}
           env:
             - name: POSTGRES_DSN
               value: "postgresql://{{ .Values.db.user }}:{{ .Values.db.password }}@db.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.db.port }}/{{ .Values.db.database }}"
+            # --- OpenTelemetry (Tempo via HTTP OTLP) ---
+            - name: OTEL_SERVICE_NAME
+              value: "three-tier-api"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://tempo.observability.svc.cluster.local:4318"
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
