@@ -1,0 +1,4 @@
+# Minimal Tempo, defaults to port 3100 for HTTP/OTLP ingestion proxy.
+tempo:
+  metricsGenerator:
+    enabled: false
