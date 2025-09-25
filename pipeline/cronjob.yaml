@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline-code
+  namespace: three-tier
+data:
+  job.py: |
+    import os, json, psycopg2, psycopg2.extras
+
+    DSN = os.getenv(
+        "POSTGRES_DSN",
+        "postgresql://postgres:postgres@db.three-tier.svc.cluster.local:5432/postgres"
+    )
+
+    def main():
+        with psycopg2.connect(DSN) as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            # ensure tables exist
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS orders(
+              id SERIAL PRIMARY KEY,
+              payload JSONB NOT NULL,
+              created_at TIMESTAMP DEFAULT NOW()
+            )""")
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS order_stats(
+              ts TIMESTAMP DEFAULT NOW(),
+              total_orders INT NOT NULL
+            )""")
+            # summarize
+            cur.execute("SELECT COUNT(*) AS c FROM orders")
+            count = cur.fetchone()["c"]
+            cur.execute("INSERT INTO order_stats(total_orders) VALUES (%s)", (count,))
+            conn.commit()
+        print("Recorded total_orders:", count)
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: orders-summary
+  namespace: three-tier
+spec:
+  schedule: "*/1 * * * *"   # every minute
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: summarizer
+              image: python:3.11-slim
+              # install psycopg2-binary then run the script from the mounted ConfigMap
+              command: ["sh","-c","pip install -q psycopg2-binary && python /app/job.py"]
+              env:
+                - name: POSTGRES_DSN
+                  value: "postgresql://postgres:postgres@db.three-tier.svc.cluster.local:5432/postgres"
+              volumeMounts:
+                - name: app
+                  mountPath: /app
+          volumes:
+            - name: app
+              configMap:
+                name: pipeline-code
+                items:
+                  - key: job.py
+                    path: job.py
