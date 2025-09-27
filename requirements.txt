@@ -12,4 +12,5 @@ opentelemetry-instrumentation-psycopg2==0.58b0
 
 pytest
 requests
+httpx
 
