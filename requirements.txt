@@ -8,5 +8,8 @@ opentelemetry-exporter-otlp==1.37.0
 
 opentelemetry-instrumentation-fastapi==0.58b0
 opentelemetry-instrumentation-requests==0.58b0
-opentelemetry-instrumentation-psycopg2==0.58b0   # ← this one
+opentelemetry-instrumentation-psycopg2==0.58b0 
+
+pytest
+requests
 
