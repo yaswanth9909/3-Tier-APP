@@ -62,7 +62,7 @@ Grafana → dashboards (login admin / Admin123456789!)
 Access Grafana
 
 ```bash
-kubectl -n observability port-forward svc/grafana 3000:80
+kubectl -n observability port-forward svc/prom-grafana 3000:80
 ```
 # Data Pipeline
 
