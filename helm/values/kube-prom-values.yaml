@@ -10,4 +10,4 @@ grafana:
     - name: Tempo
       type: tempo
       access: proxy
-      url: http://tempo:3100
+      url: http://tempo:3200
